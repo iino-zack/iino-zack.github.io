@@ -38,3 +38,7 @@ outputs:
     - HTML
     - RSS
     - JSON # necessary for search
+
+caches:
+  images:
+    dir: :cacheDir/images

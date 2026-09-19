@@ -1,0 +1,40 @@
+baseURL: https://example.org/
+locale: en-us
+title: iino-zack
+theme: ["PaperMod", "hugo-admonitions"]
+
+languages:
+  en:
+    languageName: "English"
+    weight: 1
+    taxonomies:
+      category: categories
+      tag: tags
+      series: series
+    menu:
+      main:
+        - name: Search
+          url: search/
+          weight: 2
+        - name: Tags
+          url: tags/
+          weight: 4
+
+params:
+  ShowBreadCrumbs: true
+  ShowPostNavLinks: true
+  ShowCodeCopyButtons: true
+  ShowReadingTime: true
+  homeInfoParams:
+    Title: Welcome!
+    Content: This website is mostly for random projects, CTF writeups and yapping. Hope you stick around!
+
+  socialIcons:
+    - name: "github"
+      url: "https://github.com/iino-zack"
+
+outputs:
+  home:
+    - HTML
+    - RSS
+    - JSON # necessary for search

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Blockchain on iino-zack</title>
+    <link>http://localhost:1313/tags/blockchain/</link>
+    <description>Recent content in Blockchain on iino-zack</description>
+    <generator>Hugo</generator>
+    <language>en-us</language>
+    <lastBuildDate>Fri, 25 Sep 2026 22:25:16 +0800</lastBuildDate>
+    <atom:link href="http://localhost:1313/tags/blockchain/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Holmes CTF 2026</title>
+      <link>http://localhost:1313/posts/holmesctf2026/</link>
+      <pubDate>Fri, 25 Sep 2026 22:25:16 +0800</pubDate>
+      <guid>http://localhost:1313/posts/holmesctf2026/</guid>
+      <description>This page covers selected portions of Silent Dividend, Whisper Chain and Poisoned Branch.</description>
+    </item>
+  </channel>
+</rss>

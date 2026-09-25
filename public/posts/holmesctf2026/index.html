@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto" data-theme="auto">
+
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>Holmes CTF 2026 | iino-zack</title>
+<meta name="keywords" content="obfuscation, reverse engineering, blockchain, forensics">
+<meta name="description" content="This page covers selected portions of Silent Dividend, Whisper Chain and Poisoned Branch.">
+<meta name="author" content="">
+<link rel="canonical" href="http://localhost:1313/posts/holmesctf2026/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.cd9298b33628769aa1bc1acebbbfd7aa11ce81dfe03484d479e1907760249a1d.css" integrity="sha256-zZKYszYodpqhvBrOu7/XqhHOgd/gNITUeeGQd2Akmh0=" rel="preload stylesheet" as="style">
+<link rel="icon" href="http://localhost:1313/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://localhost:1313/apple-touch-icon.png">
+<link rel="mask-icon" href="http://localhost:1313/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="http://localhost:1313/posts/holmesctf2026/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+                color-scheme: dark;
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .toc {
+                background: var(--entry);
+            }
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else if (localStorage.getItem("pref-theme") === "light") {
+       document.querySelector("html").dataset.theme = 'light';
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else {
+        document.querySelector("html").dataset.theme = 'light';
+    }
+
+</script>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="header-nav">
+        <div class="logo">
+            <a href="http://localhost:1313/" accesskey="h" title="iino-zack (Alt + H)">iino-zack</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu" class="menu">
+            <li>
+                <a href="http://localhost:1313/search/" title="Search (Alt &#43; /)" accesskey=/>
+                    <span>Search</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/tags/" title="Tags">
+                    <span>Tags</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <nav class="breadcrumbs" role="navigation" aria-label="Breadcrumb">
+            <a href="/">Home</a>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            <a href="/posts/">Posts</a>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+        <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+</nav>
+    <h1 class="post-title entry-hint-parent">
+      Holmes CTF 2026
+    </h1>
+    <div class="post-description">
+      This page covers selected portions of Silent Dividend, Whisper Chain and Poisoned Branch.
+    </div>
+    <div class="post-meta">
+
+<span title='2026-09-25 22:25:16 +0800 HKT'>September 25, 2026</span>&nbsp;·&nbsp;<span>14 min</span>
+
+</div>
+  </header> <details class="toc" >
+    <summary accesskey="c" title="(Alt + C)">
+        <span class="title">Table of Contents</span>
+    </summary>
+
+    <div class="inner"><ul>
+            <li>
+                <a href="#1---silent-dividend" aria-label="1 - Silent Dividend">1 - Silent Dividend</a><ul>
+                    
+            <li>
+                <a href="#rev-trustsettle" aria-label="[REV] TrustSettle">[REV] TrustSettle</a><ul>
+                    
+            <li>
+                <a href="#analyse-analyse-and-analyse" aria-label="Analyse, analyse and analyse">Analyse, analyse and analyse</a></li>
+            <li>
+                <a href="#putting-it-all-together" aria-label="Putting it all together">Putting it all together</a></li></ul>
+            </li>
+            <li>
+                <a href="#blk-smart-contract" aria-label="[BLK] Smart Contract">[BLK] Smart Contract</a><ul>
+                    
+            <li>
+                <a href="#more-addresses" aria-label="More addresses">More addresses</a></li>
+            <li>
+                <a href="#it-was-right-there-the-whole-time" aria-label="It was right there the whole time?">It was right there the whole time?</a></li></ul>
+            </li>
+            <li>
+                <a href="#obf-luajit" aria-label="[OBF] LuaJIT">[OBF] LuaJIT</a><ul>
+                    
+            <li>
+                <a href="#some-digging" aria-label="Some digging">Some digging</a></li>
+            <li>
+                <a href="#detacsufbonu" aria-label="detacsufbonu">detacsufbonu</a></li></ul>
+            </li></ul>
+            </li>
+            <li>
+                <a href="#2---whisper-chain" aria-label="2 - Whisper Chain">2 - Whisper Chain</a><ul>
+                    
+            <li>
+                <a href="#fsc-murknethtb" aria-label="[FSC] *.murknet.htb">[FSC] *.murknet.htb</a><ul>
+                    
+            <li>
+                <a href="#hidden-configurations" aria-label="Hidden configurations">Hidden configurations</a></li>
+            <li>
+                <a href="#snooping-around" aria-label="Snooping around">Snooping around</a></li></ul>
+            </li></ul>
+            </li>
+            <li>
+                <a href="#3---poisoned-branch" aria-label="3 - Poisoned Branch">3 - Poisoned Branch</a><ul>
+                    
+            <li>
+                <a href="#fsc-tom" aria-label="[FSC] Tom">[FSC] Tom</a><ul>
+                    
+            <li>
+                <a href="#breadcrumbs" aria-label="Breadcrumbs">Breadcrumbs</a></li></ul>
+            </li>
+            <li>
+                <a href="#rev-ticket-parser" aria-label="[REV] Ticket Parser">[REV] Ticket Parser</a><ul>
+                    
+            <li>
+                <a href="#reversing-the-reverse" aria-label="Reversing the reverse">Reversing the reverse</a></li></ul>
+            </li></ul>
+            </li>
+            <li>
+                <a href="#closing-remarks" aria-label="Closing remarks">Closing remarks</a></li>
+            <li>
+                <a href="#references" aria-label="References">References</a>
+            </li>
+        </ul>
+    </div>
+</details>
+
+  <div class="post-content md-content">
+          <link rel="stylesheet" href="/css/vendors/admonitions.css">
+    <div class="admonition warning">
+      <div class="admonition-header"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M256 32c14.2 0 27.3 7.5 34.5 19.8l216 368c7.3 12.4 7.3 27.7 .2 40.1S486.3 480 472 480L40 480c-14.3 0-27.6-7.7-34.7-20.1s-7-27.8 .2-40.1l216-368C228.7 39.5 241.8 32 256 32zm0 128c-13.3 0-24 10.7-24 24l0 112c0 13.3 10.7 24 24 24s24-10.7 24-24l0-112c0-13.3-10.7-24-24-24zm32 224a32 32 0 1 0 -64 0 32 32 0 1 0 64 0z"/></svg>
+        <span>Warning</span>
+      </div>
+      <div class="admonition-content">
+        <p>Information on this page contains challenge details, solutions and payloads. Continue reading at your own risk.</p>
+      </div>
+    </div><p>This is my first time participating in a CTF hosted by an external body,and also my first attempt at producing a comprehensive write-up. Obviously, I still have lots to learn, so bear with me if I make any mistakes! :PPP</p>
+<p>Before we start: the CTF is centred around blue-team scenarios and is inspired by the works of Sherlock Holmes. Keeping that in mind helps us narrow down our toolkit when hunting for payloads and flags (Wireshark, Autopsy, Binwalk, John the Ripper, etc).</p>
+<p>Also here&rsquo;s a quick reference table FYI!</p>
+<table>
+	<thead>
+			<tr>
+					<th>Challenge</th>
+					<th>Category</th>
+					<th>Tools used</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>TrustSettle</td>
+					<td>REV</td>
+					<td>DevTools, Sepolia block explorer</td>
+			</tr>
+			<tr>
+					<td>Smart Contract</td>
+					<td>BLK</td>
+					<td>Block explorer, Python</td>
+			</tr>
+			<tr>
+					<td>LuaJIT</td>
+					<td>OBF</td>
+					<td>Online deobfuscator</td>
+			</tr>
+			<tr>
+					<td>*.murknet.htb</td>
+					<td>FSC</td>
+					<td>nmap, Psi, Wayback Machine</td>
+			</tr>
+			<tr>
+					<td>Tom / Ticket Parser</td>
+					<td>FSC / REV</td>
+					<td>Defender, git, strings</td>
+			</tr>
+	</tbody>
+</table>
+<h1 id="1---silent-dividend">1 - Silent Dividend<a hidden class="anchor" aria-hidden="true" href="#1---silent-dividend">#</a></h1>
+<p>This part covers three solves: <code>[REV] TrustSettle</code>, the <code>[BLK] Smart Contract</code> series and <code>[OBF] LuaJIT</code>.</p>
+<p>I had a pretty rough time with Silent Dividend&rsquo;s blockchain challenges. I knew next to nothing about how they worked but thankfully, it all worked out in the end.</p>
+<h2 id="rev-trustsettle">[REV] TrustSettle<a hidden class="anchor" aria-hidden="true" href="#rev-trustsettle">#</a></h2>
+<blockquote>
+<p>&ldquo;<em>A wise man will make tools of what comes to hand.</em>&rdquo; — Thomas Fuller</p>
+</blockquote>
+<p>When opening TrustSettle from the provided scenario files, we are greeted with a matching minigame wrapped in what looks like a web-view browser shell? This screams Electron. It also opens <code>settlement.html</code> from the <code>%TEMP%</code> directory which we will come back to later.</p>
+<h3 id="analyse-analyse-and-analyse">Analyse, analyse and analyse<a hidden class="anchor" aria-hidden="true" href="#analyse-analyse-and-analyse">#</a></h3>
+<p>Opening DevTools reveals that TrustSettle loads <code>renderer.js</code>, which contains the game logic and hints at something related to <code>[KEY] ...</code> and <code>[DECRYPTED] ...</code>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;display:grid;"><code class="language-javascript" data-lang="javascript"><span style="display:flex;"><span><span style="color:#75715e">// renderer.js
+</span></span></span><span style="display:flex;"><span>document.<span style="color:#a6e22e">addEventListener</span>(
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#39;DOMContentLoaded&#39;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">async</span> () =&gt; {
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">initializeGame</span>();
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">try</span> {
+</span></span><span style="display:flex;"><span>            ...
+</span></span><span style="display:flex; background-color:#3c3d38"><span>            <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">result</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> window.<span style="color:#a6e22e">appVault</span>.<span style="color:#a6e22e">initialize</span>();
+</span></span><span style="display:flex;"><span>            ...
+</span></span><span style="display:flex; background-color:#3c3d38"><span>            <span style="color:#a6e22e">addConsoleLine</span>(<span style="color:#e6db74">`[KEY] </span><span style="color:#e6db74">${</span><span style="color:#a6e22e">result</span>.<span style="color:#a6e22e">key</span><span style="color:#e6db74">}</span><span style="color:#e6db74">`</span>, <span style="color:#e6db74">&#39;info&#39;</span>);
+</span></span><span style="display:flex; background-color:#3c3d38"><span>            <span style="color:#a6e22e">addConsoleLine</span>(<span style="color:#e6db74">`[DECRYPTED] </span><span style="color:#e6db74">${</span><span style="color:#a6e22e">result</span>.<span style="color:#a6e22e">decrypted</span><span style="color:#e6db74">}</span><span style="color:#e6db74">`</span>, <span style="color:#e6db74">&#39;success&#39;</span>);
+</span></span><span style="display:flex;"><span>        } 
+</span></span><span style="display:flex;"><span>        ...
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>);
+</span></span></code></pre></div><p>Funnily enough, refreshing the application and checking the console gives us an even bigger hint: <code>preload.js</code> and some LuaJIT files. Let&rsquo;s keep these in mind.</p>
+<p><img alt="le error message" loading="lazy" src="/posts/holmesctf2026/assets/silent-dividend/error.png"></p>
+<p><code>preload.js</code> seems to be the stepping stone for solving the other parts of this challenge, so it is crucial that we understand how it works.</p>
+<p>Just by reading the source of <code>preload.js</code> and following our intuition, we can already solve three trivial flags. However, the same can&rsquo;t be said for the decrypted data. Let&rsquo;s go through this step by step.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;display:grid;"><code class="language-javascript" data-lang="javascript"><span style="display:flex;"><span><span style="color:#75715e">// preload.js
+</span></span></span><span style="display:flex;"><span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">ENCRYPTED_DATA</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;0x560c325bdd0aeea2cd2690a2ed1c1b4a28deca7ac2a40ce8d2725d539a950ca8f4a4bcf375806c36532258a0cf16c19c12989e0aa0e25a72be241da7d2f74cfa2c4c4e1bbfc6204207fe5c801d201f5af84864f0&#39;</span>;
+</span></span><span style="display:flex;"><span>...
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">async</span> <span style="color:#66d9ef">function</span> <span style="color:#a6e22e">initializeVault</span>() {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">try</span> {
+</span></span><span style="display:flex;"><span>		...	
+</span></span><span style="display:flex; background-color:#3c3d38"><span>        <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">state</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">queryRemoteState</span>();
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">remoteState</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">state</span>;
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">decrypted</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">decryptEmbeddedData</span>(<span style="color:#a6e22e">ENCRYPTED_DATA</span>, <span style="color:#a6e22e">state</span>);
+</span></span><span style="display:flex;"><span>		...
+</span></span><span style="display:flex; background-color:#3c3d38"><span>		<span style="color:#a6e22e">exec</span>(<span style="color:#a6e22e">decrypted</span>);
+</span></span><span style="display:flex;"><span>		...
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>window.<span style="color:#a6e22e">appVault</span> <span style="color:#f92672">=</span> {
+</span></span><span style="display:flex; background-color:#3c3d38"><span>    <span style="color:#a6e22e">initialize</span><span style="color:#f92672">:</span> () =&gt; <span style="color:#a6e22e">initializeVault</span>(),
+</span></span><span style="display:flex;"><span>    ...
+</span></span><span style="display:flex;"><span>};
+</span></span></code></pre></div><p>We can see that the <code>initialize()</code> call from <code>renderer.js</code> maps to <code>initializeVault()</code> in <code>preload.js</code> and that two auxiliary functions <code>queryRemoteState()</code> and <code>decryptEmbeddedData()</code> are used to decrypt the data. The result is then executed as a command.</p>
+<p>Analysing <code>decryptEmbeddedData()</code> tells us two things: both of its parameters are expected to be hexadecimal <code>string</code> values.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;display:grid;"><code class="language-javascript" data-lang="javascript"><span style="display:flex;"><span><span style="color:#75715e">// preload.js
+</span></span></span><span style="display:flex;"><span><span style="color:#66d9ef">function</span> <span style="color:#a6e22e">hexToBuffer</span>(<span style="color:#a6e22e">value</span>, <span style="color:#a6e22e">name</span>) {
+</span></span><span style="display:flex; background-color:#3c3d38"><span>    <span style="color:#66d9ef">if</span> (<span style="color:#66d9ef">typeof</span> <span style="color:#a6e22e">value</span> <span style="color:#f92672">!==</span> <span style="color:#e6db74">&#39;string&#39;</span> <span style="color:#f92672">||</span> <span style="color:#f92672">!</span><span style="color:#e6db74">/^0x[0-9a-fA-F]*$/</span>.<span style="color:#a6e22e">test</span>(<span style="color:#a6e22e">value</span>) <span style="color:#f92672">||</span> <span style="color:#a6e22e">value</span>.<span style="color:#a6e22e">length</span> <span style="color:#f92672">%</span> <span style="color:#ae81ff">2</span> <span style="color:#f92672">!==</span> <span style="color:#ae81ff">0</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">throw</span> <span style="color:#66d9ef">new</span> Error(<span style="color:#e6db74">`</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">name</span><span style="color:#e6db74">}</span><span style="color:#e6db74"> is not valid hex data`</span>);
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">Buffer</span>.<span style="color:#a6e22e">from</span>(<span style="color:#a6e22e">value</span>.<span style="color:#a6e22e">slice</span>(<span style="color:#ae81ff">2</span>), <span style="color:#e6db74">&#39;hex&#39;</span>);
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">function</span> <span style="color:#a6e22e">decryptEmbeddedData</span>(<span style="color:#a6e22e">encryptedData</span>, <span style="color:#a6e22e">encryptionKey</span>) {
+</span></span><span style="display:flex; background-color:#3c3d38"><span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">data</span> <span style="color:#f92672">=</span>  <span style="color:#a6e22e">hexToBuffer</span>(<span style="color:#a6e22e">encryptedData</span>, <span style="color:#e6db74">&#39;Encrypted data&#39;</span>);
+</span></span><span style="display:flex; background-color:#3c3d38"><span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">key</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">hexToBuffer</span>(<span style="color:#a6e22e">encryptionKey</span>, <span style="color:#e6db74">&#39;Encryption key&#39;</span>);   
+</span></span><span style="display:flex;"><span>    ... 
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">result</span>.<span style="color:#a6e22e">toString</span>(<span style="color:#e6db74">&#39;utf8&#39;</span>);
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>We now know that <code>decryptEmbeddedData(hex_string, hex_string) =&gt; string</code>.</p>
+<p>Now for <code>queryRemoteState()</code>. To be honest, I had no idea what I was looking at until I read the docs:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;display:grid;"><code class="language-javascript" data-lang="javascript"><span style="display:flex;"><span><span style="color:#75715e">// preload.js
+</span></span></span><span style="display:flex; background-color:#3c3d38"><span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">CONTRACT_ADDRESS</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;0xbB63Ae28E4f75C9392bae69cDf5394Ca0ACdA6B1&#39;</span>; <span style="color:#75715e">// important!!!!
+</span></span></span><span style="display:flex; background-color:#3c3d38"><span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">RPC_URL</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;https://ethereum-sepolia-rpc.publicnode.com&#39;</span>;
+</span></span><span style="display:flex; background-color:#3c3d38"><span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">CONTRACT_ABI</span> <span style="color:#f92672">=</span> [<span style="color:#e6db74">&#39;function resolveState() view returns (bytes32)&#39;</span>];
+</span></span><span style="display:flex;"><span>...
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">async</span> <span style="color:#66d9ef">function</span> <span style="color:#a6e22e">queryRemoteState</span>() {
+</span></span><span style="display:flex;"><span>    ...
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">provider</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">ethers</span>.<span style="color:#a6e22e">JsonRpcProvider</span>(<span style="color:#a6e22e">RPC_URL</span>);
+</span></span><span style="display:flex;"><span>    ...
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">contract</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">ethers</span>.<span style="color:#a6e22e">Contract</span>(<span style="color:#a6e22e">CONTRACT_ADDRESS</span>, <span style="color:#a6e22e">CONTRACT_ABI</span>, <span style="color:#a6e22e">provider</span>);
+</span></span><span style="display:flex; background-color:#3c3d38"><span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">state</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">contract</span>.<span style="color:#a6e22e">resolveState</span>();
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">state</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Think of it as making a phone call: the code uses <code>RPC_URL</code> as the phone line to reach the building, asks for the office at <code>CONTRACT_ADDRESS</code> and relies on the <code>CONTRACT_ABI</code> as the receptionist&rsquo;s directory so it knows which question to ask (<code>resolveState()</code>). The current state comes back as the answer.</p>
+<p>Thankfully, the endpoints are public, so there&rsquo;s no need for any wizardry. There are multiple ways to obtain the state, such as running the JavaScript as-is or cURLing the RPC endpoint with a JSON payload.</p>
+<p>I decided to use a public block explorer because it has a GUI and frankly, because I&rsquo;m lazy xD</p>
+<p><img alt="le block explorer" loading="lazy" src="/posts/holmesctf2026/assets/silent-dividend/etherscan.png"></p>
+<h3 id="putting-it-all-together">Putting it all together<a hidden class="anchor" aria-hidden="true" href="#putting-it-all-together">#</a></h3>
+<p>Now that we have the key, it&rsquo;s time to decrypt the data! This is as easy as copy-pasting the functions into the developer console.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-javascript" data-lang="javascript"><span style="display:flex;"><span><span style="color:#75715e">// copy functions from preload.js
+</span></span></span><span style="display:flex;"><span><span style="color:#66d9ef">function</span> <span style="color:#a6e22e">hexToBuffer</span>(<span style="color:#a6e22e">foo</span>, <span style="color:#a6e22e">bar</span>) { ... }
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">function</span> <span style="color:#a6e22e">decryptEmbeddedData</span>(<span style="color:#a6e22e">foo</span>, <span style="color:#a6e22e">bar</span>) { ... }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">decryptEmbeddedData</span>(
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// ENCRYPTED_DATA
+</span></span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#39;0x560c325bdd0aeea2cd2690a2ed1c1b4a28deca7ac2a40ce8d2725d539a950ca8f4a4bcf375806c36532258a0cf16c19c12989e0aa0e25a72be241da7d2f74cfa2c4c4e1bbfc6204207fe5c801d201f5af84864f0&#39;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// resolveState
+</span></span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#39;0x3460743bb1ce2e6209e65e8ee3023f8414bc8416aef842b69c2a318bcef952f4&#39;</span>
+</span></span><span style="display:flex;"><span>);
+</span></span></code></pre></div><p>We get back <code>'start &quot;&quot; &quot;%TEMP%\\settlement.html&quot; &amp;&amp; echo AUTH=NAPOLEON SETTLEMENT_REFERENCE=SR-4821'</code> and with that, we have our flag!</p>
+<p><img alt="le output" loading="lazy" src="/posts/holmesctf2026/assets/silent-dividend/decrypted.png"></p>
+<h2 id="blk-smart-contract">[BLK] Smart Contract<a hidden class="anchor" aria-hidden="true" href="#blk-smart-contract">#</a></h2>
+<blockquote>
+<p>&ldquo;<em>When you change the way you look at things, the things you look at change.</em>&rdquo; — Wayne Dyer</p>
+</blockquote>
+<p>Remember <code>settlement.html</code>, the page that opened when we ran TrustSettle earlier? Solving this part becomes easy once you&rsquo;ve finished <code>[REV] TrustSettle</code>. Don&rsquo;t make the same mistake I did by attempting this one first!</p>
+<h3 id="more-addresses">More addresses<a hidden class="anchor" aria-hidden="true" href="#more-addresses">#</a></h3>
+<p>The source of <code>settlement.html</code> might look overwhelming at first, but the gist of it lives in the <code>&lt;script&gt;</code> section. It is also home to a few other trivial flags, so look carefully!</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;display:grid;"><code class="language-html" data-lang="html"><span style="display:flex;"><span><span style="color:#75715e">&lt;!-- settlement.html --&gt;</span>
+</span></span><span style="display:flex;"><span>&lt;<span style="color:#f92672">script</span>&gt;
+</span></span><span style="display:flex; background-color:#3c3d38"><span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">X0_CONTRACT_ADDRESS</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;0x69Bf5b7aBA51C3Ee8bF169aB47479ba95DBF709D&#34;</span>;
+</span></span><span style="display:flex; background-color:#3c3d38"><span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">MOCK_TOKEN_ADDRESS</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;0x6B2B0C0d0a376255Ac70Bf1366f50982bF476Bb2&#34;</span>;
+</span></span><span style="display:flex;"><span>    ...
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">provider</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">signer</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">MOCK_TOKEN_ABI</span> <span style="color:#f92672">=</span> [...] <span style="color:#75715e">// abridged for brevity
+</span></span></span><span style="display:flex;"><span>    ...
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">async</span> <span style="color:#66d9ef">function</span> <span style="color:#a6e22e">connect</span>() {
+</span></span><span style="display:flex;"><span>    ...
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">try</span> {
+</span></span><span style="display:flex;"><span>       	    ...
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">provider</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">ethers</span>.<span style="color:#a6e22e">BrowserProvider</span>(window.<span style="color:#a6e22e">ethereum</span>);
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">provider</span>.<span style="color:#a6e22e">send</span>(<span style="color:#e6db74">&#34;eth_requestAccounts&#34;</span>, []);
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">signer</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">provider</span>.<span style="color:#a6e22e">getSigner</span>();
+</span></span><span style="display:flex;"><span>            ...
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">requestApproval</span>();
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    ...
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">async</span> <span style="color:#66d9ef">function</span> <span style="color:#a6e22e">requestApproval</span>() {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">try</span> {
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">setStatus</span>(<span style="color:#e6db74">&#34;Requesting token approval...&#34;</span>, <span style="color:#e6db74">&#34;loading&#34;</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex; background-color:#3c3d38"><span>            <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">token</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">ethers</span>.<span style="color:#a6e22e">Contract</span>(<span style="color:#a6e22e">MOCK_TOKEN_ADDRESS</span>, <span style="color:#a6e22e">MOCK_TOKEN_ABI</span>, <span style="color:#a6e22e">signer</span>); <span style="color:#75715e">// looks familiar?
+</span></span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">unlimitedAmount</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">ethers</span>.<span style="color:#a6e22e">MaxUint256</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">tx</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">token</span>.<span style="color:#a6e22e">approve</span>(<span style="color:#a6e22e">X0_CONTRACT_ADDRESS</span>, <span style="color:#a6e22e">unlimitedAmount</span>);
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">tx</span>.<span style="color:#a6e22e">wait</span>();
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">setStatus</span>(<span style="color:#e6db74">`Approved`</span>, <span style="color:#e6db74">&#34;success&#34;</span>);
+</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">setTimeout</span>(() =&gt; { <span style="color:#a6e22e">alert</span>(<span style="color:#e6db74">&#34;Thank you for approval!&#34;</span>); }, <span style="color:#ae81ff">1500</span>);
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>	...
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>&lt;/<span style="color:#f92672">script</span>&gt;
+</span></span></code></pre></div><p>Does any of this look familiar? We have more contract addresses and potentially, hands-on access to ETH transactions!</p>
+<p>Let&rsquo;s look both addresses up on the block explorer and see what they contain.</p>
+<p>Starting with <code>0x69Bf5b7aBA51C3Ee8bF169aB47479ba95DBF709D</code>: it looks like someone at <code>0xc65a47bC149C655c5A114a8e76b231B6405Bd3a4</code> transacted with <code>0x69...</code>. We&rsquo;ll keep this in mind.</p>
+<p><img alt="le 0x69" loading="lazy" src="/posts/holmesctf2026/assets/silent-dividend/0x69.png"></p>
+<p>Digging into this address, we get two more addresses and a function that takes an address as input, which we can query:</p>
+<p><img alt="le 0x69 read contract" loading="lazy" src="/posts/holmesctf2026/assets/silent-dividend/0x69-read.png"></p>
+<p>Yikes. That makes five addresses we can test in total, including the one from <code>[REV] TrustSettle</code>.</p>
+<p>Looking at the contract&rsquo;s code, we can see a function <code>x9()</code> that calls <code>x7()</code> and compares the result with the variable <code>x10</code>, returning a decry&hellip; wait. Didn&rsquo;t I see this before?</p>
+<p><img alt="le 0x69 code" loading="lazy" src="/posts/holmesctf2026/assets/silent-dividend/0x69-code.png"></p>
+<h3 id="it-was-right-there-the-whole-time">It was right there the whole time?<a hidden class="anchor" aria-hidden="true" href="#it-was-right-there-the-whole-time">#</a></h3>
+<p>Well. If we take the value returned by <code>x7()</code> and pass it into <code>x9()</code>, we obtain the final flag.</p>
+<p>Maybe it was the block explorer doing all the heavy lifting, but solving it this way felt underwhelming.</p>
+<figure>
+    <img loading="lazy" src="./assets/silent-dividend/spongebob.gif"
+         alt="my reaction (not clickbait)"/> <figcaption>
+            <p>my reaction (not clickbait)</p>
+        </figcaption>
+</figure>
+
+<p>For those interested, the address can also be obtained by hand with bitwise operations. According to the <a href="https://docs.soliditylang.org/en/v0.8.37/types.html">Solidity documentation</a>:</p>
+<blockquote>
+<p><strong>int / uint</strong>: Signed and unsigned integers of various sizes. Keywords uint8 to uint256 in steps of 8 (unsigned of 8 up to 256 bits) and int8 to int256. uint and int are aliases for uint256 and int256, respectively.</p>
+<p><strong>address</strong>: Holds a 20 byte value (size of an Ethereum address).</p>
+<p><strong>Bit operators</strong>: &amp;, |, <strong>^</strong> (bitwise exclusive or), ~ (bitwise negation)</p>
+</blockquote>
+<p>This means the <code>x7()</code> function simplifies to:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-sol" data-lang="sol"><span style="display:flex;"><span><span style="color:#66d9ef">function</span> <span style="color:#a6e22e">x7</span>() <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">view</span> <span style="color:#66d9ef">returns</span> (<span style="color:#66d9ef">address</span>) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">uint160</span>(<span style="color:#66d9ef">uint</span>(x2) <span style="color:#f92672">^</span> <span style="color:#66d9ef">uint</span>(x3));
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>We can use Python to write a small script that performs the conversion into the required address!</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#75715e"># 1 byte = 8 bits</span>
+</span></span><span style="display:flex;"><span>x2 <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x7ccb3a440e383635148b237df8bb22dff0b594425beae88d6e1623df0bc7669b</span>
+</span></span><span style="display:flex;"><span>x3 <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x7ccb3a440e383635148b237d13473c069ba9ffd6545c58ee37e969b87d181c01</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Step 1: XOR (not raising it to a power!!!!)</span>
+</span></span><span style="display:flex;"><span>xor_result <span style="color:#f92672">=</span> x2 <span style="color:#f92672">^</span> x3
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Step 2: Cast to uint160 / address </span>
+</span></span><span style="display:flex;"><span>uint160_mask <span style="color:#f92672">=</span> (<span style="color:#ae81ff">1</span> <span style="color:#f92672">&lt;&lt;</span> <span style="color:#ae81ff">160</span>) <span style="color:#f92672">-</span> <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>address_int <span style="color:#f92672">=</span> xor_result <span style="color:#f92672">&amp;</span> uint160_mask
+</span></span><span style="display:flex;"><span>print(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Address: </span><span style="color:#e6db74">{</span>hex(address_int)<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>)
+</span></span></code></pre></div><p>Running it outputs <code>Address: 0xebfc1ed96b1c6b940fb6b06359ff4a6776df7a9a</code>. Substituting this as the value of the <code>x10</code> parameter and querying the function gives us the flag:</p>
+<p><img alt="le flag" loading="lazy" src="/posts/holmesctf2026/assets/silent-dividend/0x69-flag.png"></p>
+<p>Voilà!</p>
+<h2 id="obf-luajit">[OBF] LuaJIT<a hidden class="anchor" aria-hidden="true" href="#obf-luajit">#</a></h2>
+<blockquote>
+<p>&ldquo;<em>There is nothing more deceptive than an obvious fact.</em>&rdquo; — Arthur Conan Doyle</p>
+</blockquote>
+<p>Saved the most tedious for last. I don&rsquo;t think I would have gotten very far here if it weren&rsquo;t for the countless hours I poured into Roblox and Garry&rsquo;s Mod.</p>
+<h3 id="some-digging">Some digging<a hidden class="anchor" aria-hidden="true" href="#some-digging">#</a></h3>
+<p>Besides executing the decrypted command we obtained in <code>[REV] TrustSettle</code>, <code>preload.js</code> also spawns a hidden PowerShell window with silent logging and runs <code>C:\Users\Public\luajit.exe C:\Users\Public\api.txt</code>.</p>
+<p>Let&rsquo;s run that command ourselves and see what is going on.</p>
+<p><img alt="le powershell" loading="lazy" src="/posts/holmesctf2026/assets/silent-dividend/luajit.png"></p>
+<p>It looks like it is watching for changes to the <code>.env</code> file populated by TrustSettle. If you recall the <code>README.md</code> bundled with the application, you might think we need to feed the credentials gathered earlier into <code>.env</code> to solve it.</p>
+<p>But no. No such tedium required. Passing <code>--help</code> to <code>luajit.exe</code> shows that it expects a script file as its parameter (<code>api.txt</code> in this case). Moreover, looking at the raw contents of <code>api.txt</code>, we can see it is some kind of obfuscated script.</p>
+<p><img alt="le eye strain" loading="lazy" src="/posts/holmesctf2026/assets/silent-dividend/luajit-obf.png"></p>
+<h3 id="detacsufbonu">detacsufbonu<a hidden class="anchor" aria-hidden="true" href="#detacsufbonu">#</a></h3>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>Instantly, I recognised both the obfuscator and the language (I was a crazy skid back then).</p>
+<p><code>api.txt</code> is obfuscated with Prometheus and thankfully there are external tools that make the deobfuscation process much easier. I used <a href="https://luajiteditor.com/deobfuscate">this one</a> since I didn&rsquo;t want to download or install anything lol</p>
+<p><img alt="le lua" loading="lazy" src="/posts/holmesctf2026/assets/silent-dividend/luajit-deobf.png"></p>
+<p>With the deobfuscated code in hand, we can finally solve the remaining flags of the challenge.</p>
+<h1 id="2---whisper-chain">2 - Whisper Chain<a hidden class="anchor" aria-hidden="true" href="#2---whisper-chain">#</a></h1>
+<p>This part covers my solve of <code>[FSC] *.murknet.htb</code>.</p>
+<p>Solving this part was a pain in the ass. Mostly due to my flaky XMPP client freezing up and occasionally taking the rest of my system down with it.</p>
+<h2 id="fsc-murknethtb">[FSC] *.murknet.htb<a hidden class="anchor" aria-hidden="true" href="#fsc-murknethtb">#</a></h2>
+<blockquote>
+<p>&ldquo;<em>Data! Data! Data! I can&rsquo;t make bricks without clay.</em>&rdquo; — Sherlock Holmes</p>
+</blockquote>
+<p>The scenario gives us an IP address in the private <code>10.x.x.x</code> range. Browsing to it (over the VPN) for the first time throws a warning about the site using a self-signed certificate.</p>
+<p>Now, what do we do when we are explicitly warned? <del>We ignore it and continue as usu&hellip;</del> Ahem, I meant we analyse and dissect the certificate to see if it gives us any hints.</p>
+<h3 id="hidden-configurations">Hidden configurations<a hidden class="anchor" aria-hidden="true" href="#hidden-configurations">#</a></h3>
+<p>Opening the certificate details shows the Subject Alternative Names and its configured DNS records.</p>
+<p><img alt="le SANs" loading="lazy" src="/posts/holmesctf2026/assets/whisper-chain/SANs.png"></p>
+<p>From this, we can see that the root domain <code>murknet.htb</code> has <code>groups.murknet.htb</code>, <code>command.murknet.htb</code> and <code>upload.murknet.htb</code> as subdomains, likely used for functional/environmental segmentation. This also gives us our first flag!</p>
+<p>Visiting the IP itself gives us a cryptic, mysterious message and any attempts to dirb or nuclei it lead nowhere. I learned this the hard way :(</p>
+<p>Remember the golden rule whenever you are handed an IP address: scan its ports with nmap!</p>
+<p><img alt="le nmap" loading="lazy" src="/posts/holmesctf2026/assets/whisper-chain/nmap.png"></p>
+<p>With the ports enumerated, we can see that the server is hosting XMPP services. According to online information:</p>
+<blockquote>
+<p>Extensible Messaging and Presence Protocol is an open communication protocol designed for instant messaging, presence information and contact list maintenance. Based on XML</p>
+</blockquote>
+<p>One common mistake is to immediately rescan the ports with nmap&rsquo;s scripts. However, doing so reports the host as unknown, because we haven&rsquo;t actually mapped the given IP address to its hostnames yet.</p>
+<p><img alt="le nmap failure" loading="lazy" src="/posts/holmesctf2026/assets/whisper-chain/nmap-fail.png"></p>
+<p>The fix is to add a line to <code>/etc/hosts</code>:</p>
+<pre tabindex="0"><code>[IP_ADDRESS] murknet.htb groups.murknet.htb command.murknet.htb upload.murknet.htb
+</code></pre><p>And if we run the scripts again:</p>
+<p><img alt="le nmap success" loading="lazy" src="/posts/holmesctf2026/assets/whisper-chain/nmap-success.png"></p>
+<p>The results tell us one key thing: <strong>the XMPP server allows in-band registration</strong>. This means that with an XMPP client, we can register an account with an arbitrary password and see what is in store for us.</p>
+<h3 id="snooping-around">Snooping around<a hidden class="anchor" aria-hidden="true" href="#snooping-around">#</a></h3>
+<p>I used <a href="https://psi-im.org/">Psi</a> with the following settings to register and connect to <code>murknet.htb</code>:
+<img alt="le Psi" loading="lazy" src="/posts/holmesctf2026/assets/whisper-chain/psi-register.png"></p>
+<p>Using the client&rsquo;s service discovery feature, we find the following public rooms: <code>infra@groups.murknet.htb</code>, <code>random@groups.murknet.htb</code>, <code>resources@groups.murknet.htb</code> and <code>rules@groups.murknet.htb</code>.</p>
+<p>Looking through the message history, we obtain a list of exposed passwords in <code>infra@groups.murknet.htb</code>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;display:grid;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#75715e"># infra@groups.murknet.htb</span>
+</span></span><span style="display:flex;"><span>...
+</span></span><span style="display:flex;"><span><span style="color:#f92672">rattlesnake</span>: <span style="color:#ae81ff">speaking of old stuff...</span>
+</span></span><span style="display:flex; background-color:#3c3d38"><span><span style="color:#f92672">rattlesnake</span>: <span style="color:#f92672">these were the temporary passwords we handed out before</span>: <span style="color:#ae81ff">KillBill2025! K4w4Bong424! Northwind225! TickTock24!</span>
+</span></span><span style="display:flex;"><span>...
+</span></span><span style="display:flex;"><span><span style="color:#f92672">doctor</span>: <span style="color:#ae81ff">are you out of your fucking mind?</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">doctor</span>: <span style="color:#ae81ff">why would you post historical credentials in a public room?</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">rattlesnake</span>: <span style="color:#ae81ff">they&#39;re old</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">doctor</span>: <span style="color:#ae81ff">I don&#39;t fucking care if they&#39;re ten years old</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">doctor</span>: <span style="color:#ae81ff">assume somebody is still using one</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">doctor</span>: <span style="color:#ae81ff">everyone who ever received one of those passwords rotates it NOW!</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">colonel</span>: <span style="color:#ae81ff">agreed</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">venom</span>: <span style="color:#ae81ff">that&#39;s exactly why we stopped provisioning accounts manually</span>
+</span></span><span style="display:flex; background-color:#3c3d38"><span><span style="color:#f92672">swissclock</span>: <span style="color:#ae81ff">will do soon</span>
+</span></span></code></pre></div><p>We also have a person of interest: <code>swissclock</code> who alludes to &ldquo;changing the password soon&rdquo;. Now we just have to find more information on them.</p>
+<p>In <code>resources@groups.murknet.htb</code>, there is banter about accidentally leaking data in a PDF:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;display:grid;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#75715e"># resources@groups.murknet.htb</span>
+</span></span><span style="display:flex; background-color:#3c3d38"><span><span style="color:#f92672">dang</span>: <span style="color:#ae81ff">imagine leaking your damn username through a pdf</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">venom</span>: <span style="color:#ae81ff">wouldn&#39;t be the first idiot</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">doctor</span>: <span style="color:#ae81ff">don&#39;t tempt fate</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">swissclock</span>: <span style="color:#ae81ff">updated the onboarding guide. cleaned up a lot of outdated screenshots</span>
+</span></span><span style="display:flex; background-color:#3c3d38"><span><span style="color:#f92672">swissclock</span>: <span style="color:#ae81ff">https://upload.murknet.htb/file_share/019fc291-98f6-7e49-a5d0-b20bb050038a/Operational_Onboarding_Guide_v3.2.pdf</span>
+</span></span></code></pre></div><p>If we download and analyse the PDF sent by <code>swissclock</code>, we can read its metadata:</p>
+<p><img alt="le pdf metadata" loading="lazy" src="/posts/holmesctf2026/assets/whisper-chain/pdf.png"></p>
+<p>Now we can add <code>zytglogge88@murknet.htb</code> as a new account in the XMPP client and try each of the leaked passwords, picking up a flag along the way!</p>
+<p>Logging in as <code>swissclock</code> reveals new additions in the menu, plus access to <code>op_snatch@groups.murknet.htb</code> and <code>op_sparkling@groups.murknet.htb</code>:</p>
+<p><img alt="le swissclock" loading="lazy" src="/posts/holmesctf2026/assets/whisper-chain/psi-swissclock.png"></p>
+<p>Reading the chat history in both channels answers who kidnapped Watson and gives us the following:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;display:grid;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#75715e"># op_sparkling@groups.murknet.htb</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">timothy</span>: <span style="color:#ae81ff">everyone stop for a second</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">timothy</span>: <span style="color:#ae81ff">I just found something</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">rattlesnake</span>: <span style="color:#ae81ff">what</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">timothy</span>: <span style="color:#ae81ff">posting it now</span>
+</span></span><span style="display:flex; background-color:#3c3d38"><span><span style="color:#f92672">timothy</span>: <span style="color:#ae81ff">http://security.billblog.co.uk/threat/BalanceRAT-analysis-and-attribution</span>
+</span></span><span style="display:flex;"><span>...
+</span></span><span style="display:flex;"><span><span style="color:#f92672">timothy</span>: <span style="color:#ae81ff">they completely dissected BalanceRAT</span>
+</span></span><span style="display:flex;"><span>...
+</span></span><span style="display:flex;"><span><span style="color:#f92672">timothy</span>: <span style="color:#ae81ff">they claim high confidence attribution</span>
+</span></span><span style="display:flex; background-color:#3c3d38"><span><span style="color:#f92672">snowwhite</span>: <span style="color:#ae81ff">to rattlesnake</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">rattlesnake</span>: <span style="color:#ae81ff">calm down</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">doctor</span>: <span style="color:#ae81ff">don&#39;t tell me to calm down</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">doctor</span>: <span style="color:#ae81ff">they mapped your online identities</span>
+</span></span><span style="display:flex; background-color:#3c3d38"><span><span style="color:#f92672">doctor</span>: <span style="color:#ae81ff">they reconstructed your activity</span>
+</span></span><span style="display:flex; background-color:#3c3d38"><span><span style="color:#f92672">doctor</span>: <span style="color:#ae81ff">and now your name is all over their report</span>
+</span></span><span style="display:flex;"><span>...
+</span></span><span style="display:flex;"><span><span style="color:#f92672">swissclock</span>: <span style="color:#ae81ff">they mention the decryptor too</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">doctor</span>: <span style="color:#ae81ff">exactly</span>
+</span></span><span style="display:flex; background-color:#3c3d38"><span><span style="color:#f92672">doctor</span>: <span style="color:#ae81ff">even the command decryptor has leaked</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">rattlesnake</span>: <span style="color:#ae81ff">the decryptor itself isn&#39;t the important part</span>
+</span></span><span style="display:flex; background-color:#3c3d38"><span><span style="color:#f92672">rattlesnake</span>: <span style="color:#ae81ff">we&#39;ll rotate the key</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">timothy</span>: <span style="color:#ae81ff">where&#39;s the replacement?</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">rattlesnake</span>: <span style="color:#ae81ff">everyone gets it in a private message very soon</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">rattlesnake</span>: <span style="color:#ae81ff">check your DMs</span>
+</span></span></code></pre></div><p>At first, I thought this conversation was purely narrative. But given how much these folks love archiving things (as seen in <code>resources@groups.murknet.htb</code>), I thought to myself: maybe someone outside murknet archived the blog too?</p>
+<p>Turns out, there is a snapshot of the BalanceRAT analysis blog on the Wayback Machine:</p>
+<p><img alt="le snapshot" loading="lazy" src="/posts/holmesctf2026/assets/whisper-chain/wayback-snapshot.png"></p>
+<p>We have found a flag, as well as the following Bash script, which appears to be the decryptor mentioned:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#75715e">#!/usr/bin/env bash
+</span></span></span><span style="display:flex;"><span>set -euo pipefail
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>COMMAND<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">${</span>1:?Usage: $0 &lt;base64-command&gt;<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>KEY<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;BLACKFENLOTTE&#39;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>printf <span style="color:#e6db74">&#39;%s&#39;</span> <span style="color:#e6db74">&#34;</span>$COMMAND<span style="color:#e6db74">&#34;</span> |
+</span></span><span style="display:flex;"><span>    base64 -d |
+</span></span><span style="display:flex;"><span>    openssl enc <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span>        -d <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span>        -aes-256-cbc <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span>        -pbkdf2 <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span>        -iter <span style="color:#ae81ff">120000</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span>        -md sha256 <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span>        -pass <span style="color:#e6db74">&#34;pass:</span><span style="color:#e6db74">${</span>KEY<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>
+</span></span></code></pre></div><p>Despite rattlesnake promising to DM each member the new &ldquo;key&rdquo; for the decryptor, my chat log with him appeared empty during my run ;(</p>
+<p>The last flag I managed to obtain required idling for ~15 minutes, after which <code>doctor9091@murknet.htb</code> invited me to <code>op_dominance@groups.murknet.htb</code> with details on the next operation.</p>
+<p>For those interested in the remaining flags, check out <a href="https://github.com/TheNorthStars-CTF/Holmes-CTF-2026-Write-ups/blob/main/whisper-chain/README.md">this write-up</a>, which I heavily recommend!</p>
+<h1 id="3---poisoned-branch">3 - Poisoned Branch<a hidden class="anchor" aria-hidden="true" href="#3---poisoned-branch">#</a></h1>
+<p>This part covers two solves: <code>[FSC] Tom</code> and <code>[REV] Ticket Parser</code>.</p>
+<p>Because I joined this CTF midway and of time constraints, I didn&rsquo;t manage to solve all of the flags.</p>
+<h2 id="fsc-tom">[FSC] Tom<a hidden class="anchor" aria-hidden="true" href="#fsc-tom">#</a></h2>
+<blockquote>
+<p>&ldquo;<em>Data! Data! Data! I can&rsquo;t make bricks without clay.</em>&rdquo; — Sherlock Holmes</p>
+</blockquote>
+<p>Like before, the scenario provides files that aid us in the challenge. This time we get <code>Tom.zip</code> and <code>uac_output</code>.</p>
+<p>As always, when handling unknown files or folders, we put them in a sandboxed environment in case of anything malicious.</p>
+<h3 id="breadcrumbs">Breadcrumbs<a hidden class="anchor" aria-hidden="true" href="#breadcrumbs">#</a></h3>
+<p>Downloading and unzipping the files on my Windows VM immediately triggered an antivirus warning:</p>
+<p><img alt="le antivirus" loading="lazy" src="/posts/holmesctf2026/assets/poisoned-branch/antivirus.png"></p>
+<p>Looking closer, the offending item appears to be <code>.integrity</code> from the cache of a ticket-parsing tool which already gives us a big hint and lets us solve two or three flags.</p>
+<p>Backtracking to where <code>.integrity</code> came from, we find that Tom has a project folder at <code>Tom/Projects/diogenes-ticket-parser</code>.</p>
+<p><img alt="le project folder" loading="lazy" src="/posts/holmesctf2026/assets/poisoned-branch/project-folder.png"></p>
+<p>Opening the folder and looking at its contents, we can deduce that it is a clone of
+a repository. A simple <code>git status</code> also gives us a flag!</p>
+<p>Morover, one line in <code>ticket_parser.py</code> from <code>diogenes-ticket-parser</code> stands out: <code>validate_environment()</code> is intentionally left outside the <code>try ... except</code> block.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;display:grid;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#75715e"># ticket_parser.py</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#!/usr/bin/env python3</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> sys
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> src.ticket_parser.parser <span style="color:#f92672">import</span> parse_ticket_export
+</span></span><span style="display:flex; background-color:#3c3d38"><span><span style="color:#f92672">from</span> src.ticket_parser.telemetry <span style="color:#f92672">import</span> validate_environment
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> src.ticket_parser.output_helpers <span style="color:#f92672">import</span> apply_not_running_away_defaults
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> src.ticket_parser.runtime_checks <span style="color:#f92672">import</span> (
+</span></span><span style="display:flex;"><span>    build_2xreflect_profile,
+</span></span><span style="display:flex;"><span>    inspect_double_black_header,
+</span></span><span style="display:flex;"><span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">main</span>():
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">try</span>:
+</span></span><span style="display:flex;"><span>        build_2xreflect_profile()
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># Retained for compatibility with the original branch.</span>
+</span></span><span style="display:flex;"><span>        input_data <span style="color:#f92672">=</span> inspect_double_black_header({<span style="color:#e6db74">&#34;magic_pause&#34;</span>:<span style="color:#ae81ff">6</span>})
+</span></span><span style="display:flex;"><span>        parser_profile <span style="color:#f92672">=</span> apply_not_running_away_defaults(parser_profile)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">except</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">pass</span>
+</span></span><span style="display:flex; background-color:#3c3d38"><span>    validate_environment()
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> len(sys<span style="color:#f92672">.</span>argv) <span style="color:#f92672">!=</span> <span style="color:#ae81ff">2</span>:
+</span></span><span style="display:flex;"><span>        print(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Usage: </span><span style="color:#e6db74">{</span>sys<span style="color:#f92672">.</span>argv[<span style="color:#ae81ff">0</span>]<span style="color:#e6db74">}</span><span style="color:#e6db74"> &lt;ticket-export.csv&gt;&#34;</span>)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">raise</span> <span style="color:#a6e22e">SystemExit</span>(<span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    records <span style="color:#f92672">=</span> parse_ticket_export(sys<span style="color:#f92672">.</span>argv[<span style="color:#ae81ff">1</span>])
+</span></span><span style="display:flex;"><span>    print(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;[+] Parsed </span><span style="color:#e6db74">{</span>len(records)<span style="color:#e6db74">}</span><span style="color:#e6db74"> ticket records&#34;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> __name__ <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;__main__&#34;</span>:
+</span></span><span style="display:flex;"><span>    main()
+</span></span></code></pre></div><p>Digging deeper into <code>src/ticket_parser/telemetry.py</code>, the code looks pretty sketchy. Deciphering the <code>calibration_command</code> gives us:</p>
+<p><img alt="le telemetry" loading="lazy" src="/posts/holmesctf2026/assets/poisoned-branch/telemetry.png"></p>
+<p>In short, it makes <code>.integrity</code> executable, runs it in the background and hides any error messages. With all this information, we can solve another flag.</p>
+<h2 id="rev-ticket-parser">[REV] Ticket Parser<a hidden class="anchor" aria-hidden="true" href="#rev-ticket-parser">#</a></h2>
+<blockquote>
+<p>&ldquo;<em>It has long been an axiom of mine that the little things are infinitely the most important.</em>&rdquo; — Sherlock Holmes</p>
+</blockquote>
+<p>Remember the antivirus alert from earlier? Thankfully, Microsoft already did half the work for us by telling us that the file is a <strong>backdoor</strong> that provides <strong>remote access</strong> to the victim&rsquo;s machine.</p>
+<h3 id="reversing-the-reverse">Reversing the reverse<a hidden class="anchor" aria-hidden="true" href="#reversing-the-reverse">#</a></h3>
+<p>Almost all remote backdoors communicate over TCP or UDP, since these are the fundamental transport protocols of IP networking. So, to reverse engineer and understand how the <code>.integrity</code> executable works, we look for network-related keywords such as <code>HTTP</code>, <code>UDP</code> and <code>TCP</code>.</p>
+<p>Running a simple <code>strings</code> on the <code>.integrity</code> file gives us the other flag:</p>
+<p><img alt="le strings" loading="lazy" src="/posts/holmesctf2026/assets/poisoned-branch/strings.png"></p>
+<p>Unfortunately, that&rsquo;s all I managed to find before the CTF ended. For details on the remaining flags, I recommend <a href="https://github.com/TheNorthStars-CTF/Holmes-CTF-2026-Write-ups/blob/main/PoisonedBranch/README.md">this write-up</a> by the same author as the Whisper Chain one!</p>
+<h1 id="closing-remarks">Closing remarks<a hidden class="anchor" aria-hidden="true" href="#closing-remarks">#</a></h1>
+<p>As someone relatively new to CTFs and blue-teaming, this event definitely opened my eyes to the world of defensive security and taught me that sometimes the answer has been sitting right in front of you the whole time. Despite the numerous setbacks, I still had a blast and thoroughly enjoyed the flag-hunting experience.</p>
+<h1 id="references">References<a hidden class="anchor" aria-hidden="true" href="#references">#</a></h1>
+<ul>
+<li><a href="https://sepolia.etherscan.io">https://sepolia.etherscan.io</a></li>
+<li><a href="https://docs.soliditylang.org/en/v0.8.37/types.html">https://docs.soliditylang.org/en/v0.8.37/types.html</a></li>
+<li><a href="https://luajiteditor.com/deobfuscate">https://luajiteditor.com/deobfuscate</a></li>
+<li><a href="https://xmpp.org/about/technology-overview/">https://xmpp.org/about/technology-overview/</a></li>
+<li><a href="https://psi-im.org/">https://psi-im.org/</a></li>
+<li><a href="https://git-scm.com/docs">https://git-scm.com/docs</a></li>
+</ul>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="http://localhost:1313/tags/obfuscation/">Obfuscation</a></li>
+      <li><a href="http://localhost:1313/tags/reverse-engineering/">Reverse Engineering</a></li>
+      <li><a href="http://localhost:1313/tags/blockchain/">Blockchain</a></li>
+      <li><a href="http://localhost:1313/tags/forensics/">Forensics</a></li>
+    </ul>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="http://localhost:1313/">iino-zack</a></span> · 
+
+    
+    
+    <span>
+        Powered by
+        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
+        <polyline points="17 11 12 6 7 11"></polyline>
+        <polyline points="17 18 12 13 7 18"></polyline>
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var toplink = document.getElementById("top-link");
+    window.onscroll = function () {
+        const scrollThreshold = window.innerHeight;
+        if (document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold) {
+            toplink.classList.remove("hidden");
+        } else {
+            toplink.classList.add("hidden");
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = 'copy';
+
+        function copyingDone() {
+            copybutton.innerHTML = 'copied!';
+            setTimeout(() => {
+                copybutton.innerHTML = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

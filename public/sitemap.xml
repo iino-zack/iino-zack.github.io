@@ -6,6 +6,8 @@
   </url><url>
     <loc>https://example.org/</loc>
   </url><url>
+    <loc>https://example.org/posts/</loc>
+  </url><url>
     <loc>https://example.org/search/</loc>
   </url><url>
     <loc>https://example.org/series/</loc>

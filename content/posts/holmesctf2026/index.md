@@ -39,7 +39,7 @@ When opening TrustSettle from the provided scenario files, we are greeted with a
 ### Analyse, analyse and analyse
 
 Opening DevTools reveals that TrustSettle loads `renderer.js`, which contains the game logic and hints at something related to `[KEY] ...` and `[DECRYPTED] ...`:
-```javascript {hl_lines=[8, 10, 11]}
+```javascript {linenos=inline, hl_lines=[8, 10, 11]}
 // renderer.js
 document.addEventListener(
     'DOMContentLoaded',
@@ -65,7 +65,7 @@ Funnily enough, refreshing the application and checking the console gives us an 
 
 Just by reading the source of `preload.js` and following our intuition, we can already solve three trivial flags. However, the same can't be said for the decrypted data. Let's go through this step by step.
 
-```javascript {hl_lines=[7, 11, 17]}
+```javascript {linenos=inline, hl_lines=[7, 11, 17]}
 // preload.js
 const ENCRYPTED_DATA = '0x560c325bdd0aeea2cd2690a2ed1c1b4a28deca7ac2a40ce8d2725d539a950ca8f4a4bcf375806c36532258a0cf16c19c12989e0aa0e25a72be241da7d2f74cfa2c4c4e1bbfc6204207fe5c801d201f5af84864f0';
 ...
@@ -91,7 +91,7 @@ We can see that the `initialize()` call from `renderer.js` maps to `initializeVa
 
 Analysing `decryptEmbeddedData()` tells us two things: both of its parameters are expected to be hexadecimal `string` values.
 
-```javascript {hl_lines=[3, 11, 12]}
+```javascript {linenos=inline, hl_lines=[3, 11, 12]}
 // preload.js
 function hexToBuffer(value, name) {
     if (typeof value !== 'string' || !/^0x[0-9a-fA-F]*$/.test(value) || value.length % 2 !== 0) {
@@ -112,7 +112,7 @@ We now know that `decryptEmbeddedData(hex_string, hex_string) => string`.
 
 Now for `queryRemoteState()`. To be honest, I had no idea what I was looking at until I read the docs:
 
-```javascript {hl_lines=[2, 3, 4, 11]}
+```javascript {linenos=inline, hl_lines=[2, 3, 4, 11]}
 // preload.js
 const CONTRACT_ADDRESS = '0xbB63Ae28E4f75C9392bae69cDf5394Ca0ACdA6B1'; // important!!!!
 const RPC_URL = 'https://ethereum-sepolia-rpc.publicnode.com';
@@ -160,13 +160,16 @@ We get back `'start "" "%TEMP%\\settlement.html" && echo AUTH=NAPOLEON SETTLEMEN
 ## [BLK] Smart Contract
 > "_When you change the way you look at things, the things you look at change._" — Wayne Dyer
 
-Remember `settlement.html`, the page that opened when we ran TrustSettle earlier? Solving this part becomes easy once you've finished `[REV] TrustSettle`. Don't make the same mistake I did by attempting this one first!
+Remember `settlement.html`, the page that opened when we ran TrustSettle earlier? Solving this part becomes easy once you've finished `[REV] TrustSettle`.
+
+> [!CAUTION] Solve [REV] TrustSettle first
+> Everything here: the contract addresses, the "looks familiar?" moments falls out of `preload.js` and the decryption chain from the previous section. I attempted this challenge first and burned hours reverse-engineering context that was sitting in another file the whole time.
 
 ### More addresses
 
 The source of `settlement.html` might look overwhelming at first, but the gist of it lives in the `<script>` section. It is also home to a few other trivial flags, so look carefully!
 
-```html {hl_lines=[3, 4, 29]}
+```html {linenos=inline, hl_lines=[3, 4, 29]}
 <!-- settlement.html -->
 <script>
     const X0_CONTRACT_ADDRESS = "0x69Bf5b7aBA51C3Ee8bF169aB47479ba95DBF709D";
@@ -285,14 +288,15 @@ Let's run that command ourselves and see what is going on.
 
 It looks like it is watching for changes to the `.env` file populated by TrustSettle. If you recall the `README.md` bundled with the application, you might think we need to feed the credentials gathered earlier into `.env` to solve it.
 
-But no. No such tedium required. Passing `--help` to `luajit.exe` shows that it expects a script file as its parameter (`api.txt` in this case). Moreover, looking at the raw contents of `api.txt`, we can see it is some kind of obfuscated script.
+> [!TIP] Check `--help` before assuming tedium
+> My first instinct was to hand-craft `.env` credentials from everything we'd gathered so far. The answer was one option away: `luajit.exe --help` reveals it simply expects a script file as its argument. And `api.txt` is right there.
+
+Moreover, looking at the raw contents of `api.txt`, we can see it is some kind of obfuscated script.
 
 ![le eye strain](./assets/silent-dividend/luajit-obf.png)
 
 ### detacsufbonu
-<pre>
-the detacsufbonu heading is unobfuscated reversed wink
-</pre>
+*the detacsufbonu heading is unobfuscated reversed wink*
 
 Instantly, I recognised both the obfuscator and the language (I was a crazy skid back then).
 
@@ -302,6 +306,16 @@ Instantly, I recognised both the obfuscator and the language (I was a crazy skid
 
 With the deobfuscated code in hand, we can finally solve the remaining flags of the challenge.
 
+This was the entire workflow for how I solved it fully:
+```mermaid
+flowchart TD
+    A[renderer.js] -->|appVault.initialize| B[preload.js]
+    B --> C[queryRemoteState<br/>Sepolia RPC]
+    C --> D[resolveState = key]
+    D --> E[decryptEmbeddedData]
+    E --> F["settlement.html → [BLK] contract"]
+    E --> G["hidden PowerShell → [OBF] luajit"]
+```
 # 2 - Whisper Chain
 
 This part covers my solve of `[FSC] *.murknet.htb`.
@@ -309,11 +323,15 @@ This part covers my solve of `[FSC] *.murknet.htb`.
 Solving this part was a pain in the ass. Mostly due to my flaky XMPP client freezing up and occasionally taking the rest of my system down with it.
 
 ## [FSC] *.murknet.htb
-> "_Data! Data! Data! I can't make bricks without clay._" — Sherlock Holmes
+> "_You see, but you do not observe. The distinction is clear._" — Sherlock Holmes
 
 The scenario gives us an IP address in the private `10.x.x.x` range. Browsing to it (over the VPN) for the first time throws a warning about the site using a self-signed certificate.
 
 Now, what do we do when we are explicitly warned? ~~We ignore it and continue as usu...~~ Ahem, I meant we analyse and dissect the certificate to see if it gives us any hints.
+
+> [!TIP] Certificate warnings are free recon
+> A self-signed certificate warning isn't just a box to click past, the certificate itself is intel. Here, the SANs enumerate every subdomain the operator configured, which is exactly the kind of information you'd otherwise be brute-forcing for.
+
 
 ### Hidden configurations
 
@@ -323,7 +341,11 @@ Opening the certificate details shows the Subject Alternative Names and its conf
 
 From this, we can see that the root domain `murknet.htb` has `groups.murknet.htb`, `command.murknet.htb` and `upload.murknet.htb` as subdomains, likely used for functional/environmental segmentation. This also gives us our first flag!
 
-Visiting the IP itself gives us a cryptic, mysterious message and any attempts to dirb or nuclei it lead nowhere. I learned this the hard way :(
+Visiting the IP itself gives us a cryptic, mysterious message and that's all you'll ever get from it.
+
+> [!CAUTION] Don't waste time on the bare IP
+> I threw a solid chunk of an hour at dirb and nuclei here and got absolutely nothing. The landing page is a dead end on purpose; the certificate and the port scan are the real doors in. Skip the brute force.
+
 
 Remember the golden rule whenever you are handed an IP address: scan its ports with nmap!
 
@@ -332,7 +354,8 @@ Remember the golden rule whenever you are handed an IP address: scan its ports w
 With the ports enumerated, we can see that the server is hosting XMPP services. According to online information:
 > Extensible Messaging and Presence Protocol is an open communication protocol designed for instant messaging, presence information and contact list maintenance. Based on XML
 
-One common mistake is to immediately rescan the ports with nmap's scripts. However, doing so reports the host as unknown, because we haven't actually mapped the given IP address to its hostnames yet.
+> [!CAUTION] Common mistake: rescanning before mapping hostnames
+> Running nmap's service scripts (`-sC`) straight away reports every host as unknown, the services identify themselves by hostname, which nmap can't resolve yet. Fix that first (below), then rescan.
 
 ![le nmap failure](./assets/whisper-chain/nmap-fail.png)
 
@@ -356,7 +379,7 @@ I used [Psi](https://psi-im.org/) with the following settings to register and co
 Using the client's service discovery feature, we find the following public rooms: `infra@groups.murknet.htb`, `random@groups.murknet.htb`, `resources@groups.murknet.htb` and `rules@groups.murknet.htb`.
 
 Looking through the message history, we obtain a list of exposed passwords in `infra@groups.murknet.htb`:
-```yaml {hl_lines=[4, 14]}
+```yaml {linenos=inline, hl_lines=[4, 14]}
 # infra@groups.murknet.htb
 ...
 rattlesnake: speaking of old stuff...
@@ -376,7 +399,7 @@ swissclock: will do soon
 We also have a person of interest: `swissclock` who alludes to "changing the password soon". Now we just have to find more information on them.
 
 In `resources@groups.murknet.htb`, there is banter about accidentally leaking data in a PDF:
-```yaml {hl_lines=[2, 6]}
+```yaml {linenos=inline, hl_lines=[2, 6]}
 # resources@groups.murknet.htb
 dang: imagine leaking your damn username through a pdf
 venom: wouldn't be the first idiot
@@ -395,7 +418,7 @@ Logging in as `swissclock` reveals new additions in the menu, plus access to `op
 ![le swissclock](./assets/whisper-chain/psi-swissclock.png)
 
 Reading the chat history in both channels answers who kidnapped Watson and gives us the following:
-```yaml {hl_lines=[6, 11, 15, 16, 20, 22]}
+```yaml {linenos=inline, hl_lines=[6, 11, 15, 16, 20, 22]}
 # op_sparkling@groups.murknet.htb
 timothy: everyone stop for a second
 timothy: I just found something
@@ -456,6 +479,82 @@ The last flag I managed to obtain required idling for ~15 minutes, after which `
 
 For those interested in the remaining flags, check out [this write-up](https://github.com/TheNorthStars-CTF/Holmes-CTF-2026-Write-ups/blob/main/whisper-chain/README.md), which I heavily recommend!
 
+Here's a recap of what I did:
+```mermaid
+flowchart TD
+    START(["Start: given IP 10.x.x.x over VPN"]) --> CERT["HTTPS warning:<br>self-signed certificate"]
+
+    subgraph S1["Recon"]
+        SAN["Read certificate SANs:<br>groups / command / upload .murknet.htb"]
+        F1["Flag: FQDNs"]
+        BARE["Visit bare IP → cryptic message"]
+        DEAD["dirb / nuclei → nothing"]
+        NMAP["nmap -sV → XMPP services"]
+        FAIL["nmap -sC → host unknown"]
+        HOSTS["/etc/hosts: map IP to all four hostnames"]
+        OK["Rescan → in-band registration allowed"]
+
+        CERT --> SAN --> F1
+        CERT --> BARE
+        BARE --> DEAD
+        BARE --> NMAP --> FAIL
+        FAIL -->|"map hostnames first!"| HOSTS
+        SAN -. informs the fix .-> HOSTS
+        HOSTS --> OK
+    end
+
+    subgraph S2["Foothold"]
+        PSI["Psi: register an account<br>via in-band registration"]
+        DISC["Service discovery → public rooms:<br>infra / random / resources / rules"]
+        F2["Flag: accessible rooms"]
+        OK --> PSI --> DISC --> F2
+    end
+
+    subgraph S3["Room intel"]
+        INFRA["infra history: rattlesnake posts<br>old temporary passwords"]
+        POI["Person of interest: swissclock"]
+        RES["resources history: swissclock<br>shares onboarding PDF"]
+        META["Download PDF → read metadata"]
+        USER["Username: zytglogge88"]
+        LOGIN["Try leaked passwords"]
+        F3["Flag: account credentials"]
+
+        DISC --> INFRA
+        INFRA --> POI
+        DISC --> RES --> META --> USER --> LOGIN --> F3
+    end
+
+    subgraph S4["Post-exploitation"]
+        OPS["New rooms:<br>op_snatch / op_sparkling"]
+        SPARK["op_sparkling: BalanceRAT blog link,<br>Watson kidnapper revealed"]
+        F4["Flag: who kidnapped Watson"]
+        WB["Blog dead? → Wayback Machine snapshot"]
+        F5["Flag: APT member <br> social media"]
+        DEC["Leaked decryptor script<br>KEY = BLACKFENLOTTE"]
+        DM["'new key via DMs' → DMs empty :("]
+        IDLE["Idle in rooms ~15 min"]
+        INV["doctor9091 invites you to op_dominance"]
+        F6["Flag: operation details"]
+
+        LOGIN --> OPS
+        OPS --> SPARK --> F4
+        SPARK --> WB --> F5
+        WB --> DEC --> DM
+        OPS --> IDLE --> INV --> F6
+    end
+
+    SEE["Remaining flags → linked write-up"]
+    DM -. key never surfaced .-> SEE
+    OPS -. op_snatch unexplored .-> SEE
+
+    classDef flag fill:#1a7f37,stroke:#14532d,color:#ffffff,font-weight:bold
+    classDef dead fill:#7f1d1d,stroke:#450a0a,color:#ffffff
+    classDef note fill:#f4f4f5,stroke:#a1a1aa,color:#18181b
+    class F1,F2,F3,F4,F5,F6 flag
+    class DEAD,DM dead
+    class SEE note
+```
+
 # 3 - Poisoned Branch
 
 This part covers two solves: `[FSC] Tom` and `[REV] Ticket Parser`.
@@ -463,11 +562,12 @@ This part covers two solves: `[FSC] Tom` and `[REV] Ticket Parser`.
 Because I joined this CTF midway and of time constraints, I didn't manage to solve all of the flags.
 
 ## [FSC] Tom
-> "_Data! Data! Data! I can't make bricks without clay._" — Sherlock Holmes
+> "_What one man can invent another can discover._" — Sherlock Holmes
 
 Like before, the scenario provides files that aid us in the challenge. This time we get `Tom.zip` and `uac_output`.
 
-As always, when handling unknown files or folders, we put them in a sandboxed environment in case of anything malicious.
+> [!WARNING] Live malware ahead
+> The scenario files contain real, functioning malware. Defender confirms it within seconds of extraction. Do the entire analysis inside a disposable VM, and think twice about host shared folders and clipboard sharing before you double-click anything.
 
 ### Breadcrumbs
 
@@ -476,6 +576,10 @@ Downloading and unzipping the files on my Windows VM immediately triggered an an
 ![le antivirus](./assets/poisoned-branch/antivirus.png)
 
 Looking closer, the offending item appears to be `.integrity` from the cache of a ticket-parsing tool which already gives us a big hint and lets us solve two or three flags.
+
+> [!IMPORTANT] Preserve the sample before Defender does
+> Defender moved to quarantine `.integrity` the moment it hit disk. Copy the binary somewhere safe (or add an exclusion folder inside your analysis VM) first. You don't want your primary artifact vanishing mid-analysis and forcing a re-extract.
+
 
 Backtracking to where `.integrity` came from, we find that Tom has a project folder at `Tom/Projects/diogenes-ticket-parser`.
 
@@ -486,7 +590,8 @@ a repository. A simple `git status` also gives us a flag!
 
 Morover, one line in `ticket_parser.py` from `diogenes-ticket-parser` stands out: `validate_environment()` is intentionally left outside the `try ... except` block.
 
-```python {hl_lines=[5, 21]}
+*(yes, `parser_profile` is used before it's defined, part of the sketchiness)*
+```python {linenos=inline, hl_lines=[5, 21]}
 # ticket_parser.py
 #!/usr/bin/env python3
 import sys
@@ -540,9 +645,52 @@ Running a simple `strings` on the `.integrity` file gives us the other flag:
 
 Unfortunately, that's all I managed to find before the CTF ended. For details on the remaining flags, I recommend [this write-up](https://github.com/TheNorthStars-CTF/Holmes-CTF-2026-Write-ups/blob/main/PoisonedBranch/README.md) by the same author as the Whisper Chain one!
 
+As always, a recap of what I did to get to this point:
+```mermaid
+flowchart TD
+    IN(["Scenario files: Tom.zip + uac_output"]) --> VM["Analyse inside a sandboxed Windows VM"]
+    VM --> UNZIP["Extract → Defender alert fires"]
+
+    subgraph FSC["FSC · Tom"]
+        DEF["Detection: .integrity flagged as<br>a backdoor providing remote access"]
+        UNZIP --> DEF
+        DEF --> F1["Flag: C2 path"]
+        DEF --> PRJ["Trace origin: Tom/Projects/<br>diogenes-ticket-parser = git clone"]
+        PRJ --> F5["Flag: malicious repo"]
+        PRJ --> GIT["git status"]
+        GIT --> F2["Flag: author email"]
+        PRJ --> MAIN["ticket_parser.py"]
+        MAIN --> HINT["validate_environment() sits OUTSIDE<br>the try/except — deliberate?"]
+        HINT --> TELE["src/ticket_parser/telemetry.py"]
+        TELE --> CMD["Decode calibration_command:<br>chmod +x .integrity → run hidden in background"]
+        CMD -. backtrack to find how it was decoded .-> F3["Flag: file holding encrypted payload"]
+    end
+
+    subgraph REV["REV · Ticket Parser"]
+        CMD -. same sample .-> PRESERVE["Preserve a copy of .integrity<br>before Defender quarantines it!"]
+        PRESERVE --> STR["strings .integrity"]
+        STR --> NET["Hunt network keywords:<br>HTTP / UDP / TCP"]
+        NET --> F4["Flag: C2 URL & port"]
+        NET --> DEEP["Deeper RE:<br>protocol, handlers, C2"]
+    end
+
+    SEE["Remaining flags → linked write-up"]
+    DEEP -.-> SEE
+
+    classDef flag fill:#1a7f37,stroke:#14532d,color:#ffffff,font-weight:bold
+    classDef warn fill:#b45309,stroke:#7c2d12,color:#ffffff
+    classDef note fill:#f4f4f5,stroke:#a1a1aa,color:#18181b
+    class F1,F2,F3,F4,F5 flag
+    class PRESERVE warn
+    class SEE note
+```
+
 # Closing remarks
 
-As someone relatively new to CTFs and blue-teaming, this event definitely opened my eyes to the world of defensive security and taught me that sometimes the answer has been sitting right in front of you the whole time. Despite the numerous setbacks, I still had a blast and thoroughly enjoyed the flag-hunting experience.
+As someone relatively new to CTFs and blue-teaming, this event definitely opened my eyes to the world of defensive security and taught me that sometimes the answer has been sitting right in front of you the whole time. Despite the numerous setbacks, I still had a blast and thoroughly enjoyed the flag-hunting experience. Key takeaways are:
+- Solve challenges in dependency order
+- Enumerate hostnames before deep scans
+- Solutions may not be as difficult as you think
 
 # References
 - [https://sepolia.etherscan.io](https://sepolia.etherscan.io)

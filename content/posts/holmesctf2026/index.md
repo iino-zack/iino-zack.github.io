@@ -7,6 +7,7 @@ summary: "Selected solutions from Holmes CTF 2026: Silent Dividend, Whisper Chai
 tags: [obfuscation, reverse engineering, blockchain, forensics]
 categories: []
 showToc: true
+TocOpen: true
 ---
 
 > [!WARNING] Warning
@@ -579,7 +580,6 @@ Looking closer, the offending item appears to be `.integrity` from the cache of 
 
 > [!IMPORTANT] Preserve the sample before Defender does
 > Defender moved to quarantine `.integrity` the moment it hit disk. Copy the binary somewhere safe (or add an exclusion folder inside your analysis VM) first. You don't want your primary artifact vanishing mid-analysis and forcing a re-extract.
-
 
 Backtracking to where `.integrity` came from, we find that Tom has a project folder at `Tom/Projects/diogenes-ticket-parser`.
 

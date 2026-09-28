@@ -1,0 +1,70 @@
+{{ if .Store.Get "hasMermaid" }}
+{{ partial "mermaid-styles.html" . }}
+
+<script src="https://cdn.jsdelivr.net/npm/svg-pan-zoom@3.6.1/dist/svg-pan-zoom.min.js"></script>
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+
+  const getTheme = () => document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default';
+  mermaid.initialize({ startOnLoad: false, theme: getTheme() });
+
+  async function renderMermaid() {
+    document.querySelectorAll('.mermaid').forEach(el => {
+      if (el.dataset.originalCode) {
+        el.textContent = el.dataset.originalCode;
+        el.removeAttribute('data-processed');
+      } else {
+        el.dataset.originalCode = el.textContent;
+      }
+    });
+
+    await mermaid.run({ querySelector: '.mermaid' });
+
+    // Attach click handlers directly after rendering
+    document.querySelectorAll('.mermaid-wrapper').forEach(wrapper => {
+      const svg = wrapper.querySelector('svg');
+      if (svg) wrapper.onclick = () => openModal(svg);
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", async () => {
+    await renderMermaid();
+
+    // Watch PaperMod theme toggles dynamically
+    new MutationObserver(async (mutations) => {
+      if (mutations.some(m => m.attributeName === 'data-theme')) {
+        mermaid.initialize({ theme: getTheme() });
+        await renderMermaid();
+      }
+    }).observe(document.documentElement, { attributes: true });
+  });
+
+  function openModal(originalSvg) {
+    const modal = document.createElement('div');
+    modal.className = 'mermaid-modal-overlay';
+    modal.innerHTML = `<div class="mermaid-modal-content"><button class="mermaid-modal-close">&times;</button></div>`;
+    modal.querySelector('.mermaid-modal-content').appendChild(originalSvg.cloneNode(true));
+    document.body.append(modal);
+    document.body.style.overflow = 'hidden';
+
+    const clone = modal.querySelector('svg');
+    const panZoom = svgPanZoom(clone, { zoomEnabled: true, controlIconsEnabled: true, fit: true, center: true, minZoom: 0.5, maxZoom: 15 });
+
+    const resize = () => { panZoom.resize(); panZoom.fit(); panZoom.center(); };
+    window.addEventListener('resize', resize);
+
+    const close = () => {
+      panZoom.destroy();
+      modal.remove();
+      document.body.style.overflow = '';
+      window.removeEventListener('resize', resize);
+      document.removeEventListener('keydown', esc);
+    };
+
+    const esc = e => e.key === 'Escape' && close();
+    modal.querySelector('.mermaid-modal-close').onclick = close;
+    modal.onclick = e => e.target === modal && close();
+    document.addEventListener('keydown', esc);
+  }
+</script>
+{{ end }}

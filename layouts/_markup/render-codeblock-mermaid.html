@@ -1,0 +1,7 @@
+{{ $id := printf "mermaid-%d" now.UnixNano }}
+<div class="mermaid-wrapper" id="wrapper-{{ $id }}">
+    <pre class="mermaid" id="{{ $id }}">
+        {{- .Inner | htmlEscape | safeHTML -}}
+    </pre>
+</div>
+{{ .Page.Store.Set "hasMermaid" true }}

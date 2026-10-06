@@ -142,7 +142,7 @@ I decided to use a public block explorer because it has a GUI and frankly, becau
 
 Now that we have the key, it's time to decrypt the data! This is as easy as copy-pasting the functions into the developer console.
 
-```javascript
+```javascript {linenos=inline}
 // copy functions from preload.js
 function hexToBuffer(foo, bar) { ... }
 function decryptEmbeddedData(foo, bar) { ... }
@@ -248,14 +248,14 @@ For those interested, the address can also be obtained by hand with bitwise oper
 
 This means the `x7()` function simplifies to:
 
-```sol
+```sol {linenos=inline}
 function x7() public view returns (address) {
     return uint160(uint(x2) ^ uint(x3));
 }
 ```
 
 We can use Python to write a small script that performs the conversion into the required address!
-```python
+```python {linenos=inline}
 # 1 byte = 8 bits
 x2 = 0x7ccb3a440e383635148b237df8bb22dff0b594425beae88d6e1623df0bc7669b
 x3 = 0x7ccb3a440e383635148b237d13473c069ba9ffd6545c58ee37e969b87d181c01
@@ -296,8 +296,8 @@ Moreover, looking at the raw contents of `api.txt`, we can see it is some kind o
 
 ![le eye strain](./assets/silent-dividend/luajit-obf.png)
 
-### detacsufbonu
-*the detacsufbonu heading is unobfuscated reversed wink*
+### DETACSUFBONU
+*the DETACSUFBONU heading is unobfuscated reversed wink*
 
 Instantly, I recognised both the obfuscator and the language (I was a crazy skid back then).
 
@@ -307,15 +307,56 @@ Instantly, I recognised both the obfuscator and the language (I was a crazy skid
 
 With the deobfuscated code in hand, we can finally solve the remaining flags of the challenge.
 
-This was the entire workflow for how I solved it fully:
+This was the entire Silent Dividend workflow:
 ```mermaid
 flowchart TD
-    A[renderer.js] -->|appVault.initialize| B[preload.js]
-    B --> C[queryRemoteState<br/>Sepolia RPC]
-    C --> D[resolveState = key]
-    D --> E[decryptEmbeddedData]
-    E --> F["settlement.html → [BLK] contract"]
-    E --> G["hidden PowerShell → [OBF] luajit"]
+    START(["Start: run TrustSettle from the scenario files"]) --> S1
+
+    subgraph S1["REV · TrustSettle"]
+        DT["DevTools → preload.js source code"]
+        F1["Flag: decryption function"]
+        RPC["queryRemoteState(): resolveState()<br>on Sepolia → block explorer"]
+        DEC["Decrypt in the console<br>with the resolveState key"]
+        F2["Flag: decrypted payload"]
+
+        DT --> F1
+        DT --> RPC --> DEC --> F2
+    end
+    
+    subgraph S2["BLK · Smart Contract"]
+        HTML["settlement.html source code"]
+        F3["Flags: trival flags"]
+        FIRST["BLK attempted first →<br>hours wasted"]
+        X0["Block viewer on 0x69Bf5b7aBA51C3Ee8bF169aB47479ba95DBF709D"]
+        ADDR["Read contract: query x9() with x7"]
+        F4["Flag: GPS coordinates"]
+
+        HTML --> F3
+        HTML -.->|"more contract addresses"| X0
+        HTML --> FIRST
+        X0 --> ADDR --> F4
+        FIRST -.->|"context was in preload.js"| DT
+    end
+
+    subgraph S3["OBF · LuaJIT"]
+        PS["Hidden PowerShell:<br>luajit.exe api.txt"]
+        ENV["Hand-crafting .env → tedium"]
+        OBF["api.txt: Prometheus-obfuscated Lua"]
+        DEOBF["Online deobfuscator"]
+        F5["Flags: buffer structure + Win32 exfil API"]
+
+        PS --> ENV
+        ENV -->|"--help: it just runs a script"| OBF
+        PS --> OBF --> DEOBF --> F5
+    end
+
+    DEC -. "opens settlement.html" .-> HTML
+    DT -. also spawns .-> PS
+
+    classDef flag fill:#1a7f37,stroke:#14532d,color:#ffffff,font-weight:bold
+    classDef dead fill:#7f1d1d,stroke:#450a0a,color:#ffffff
+    class F1,F2,F3,F4,F5 flag
+    class FIRST,ENV dead
 ```
 # 2 - Whisper Chain
 
@@ -380,7 +421,7 @@ I used [Psi](https://psi-im.org/) with the following settings to register and co
 Using the client's service discovery feature, we find the following public rooms: `infra@groups.murknet.htb`, `random@groups.murknet.htb`, `resources@groups.murknet.htb` and `rules@groups.murknet.htb`.
 
 Looking through the message history, we obtain a list of exposed passwords in `infra@groups.murknet.htb`:
-```yaml {linenos=inline, hl_lines=[4, 14]}
+```yaml {hl_lines=[4, 14]}
 # infra@groups.murknet.htb
 ...
 rattlesnake: speaking of old stuff...
@@ -400,7 +441,7 @@ swissclock: will do soon
 We also have a person of interest: `swissclock` who alludes to "changing the password soon". Now we just have to find more information on them.
 
 In `resources@groups.murknet.htb`, there is banter about accidentally leaking data in a PDF:
-```yaml {linenos=inline, hl_lines=[2, 6]}
+```yaml {hl_lines=[2, 6]}
 # resources@groups.murknet.htb
 dang: imagine leaking your damn username through a pdf
 venom: wouldn't be the first idiot
@@ -419,7 +460,7 @@ Logging in as `swissclock` reveals new additions in the menu, plus access to `op
 ![le swissclock](./assets/whisper-chain/psi-swissclock.png)
 
 Reading the chat history in both channels answers who kidnapped Watson and gives us the following:
-```yaml {linenos=inline, hl_lines=[6, 11, 15, 16, 20, 22]}
+```yaml {hl_lines=[6, 11, 15, 16, 20, 22]}
 # op_sparkling@groups.murknet.htb
 timothy: everyone stop for a second
 timothy: I just found something
@@ -455,7 +496,7 @@ Turns out, there is a snapshot of the BalanceRAT analysis blog on the Wayback Ma
 
 We have found a flag, as well as the following Bash script, which appears to be the decryptor mentioned:
 
-```bash
+```bash {linenos=inline}
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -665,7 +706,7 @@ flowchart TD
         TELE --> CMD["Decode calibration_command:<br>chmod +x .integrity → run hidden in background"]
         CMD -. backtrack to find how it was decoded .-> F3["Flag: file holding encrypted payload"]
     end
-
+    
     subgraph REV["REV · Ticket Parser"]
         CMD -. same sample .-> PRESERVE["Preserve a copy of .integrity<br>before Defender quarantines it!"]
         PRESERVE --> STR["strings .integrity"]
@@ -699,3 +740,4 @@ As someone relatively new to CTFs and blue-teaming, this event definitely opened
 - [https://xmpp.org/about/technology-overview/](https://xmpp.org/about/technology-overview/)
 - [https://psi-im.org/](https://psi-im.org/)
 - [https://git-scm.com/docs](https://git-scm.com/docs)
+- [https://github.com/TheNorthStars-CTF/Holmes-CTF-2026-Write-ups](https://github.com/TheNorthStars-CTF/Holmes-CTF-2026-Write-ups)
